@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#f0e6d2">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>PIXEL PACER</title>
+<style>
+  :root{
+    --cream:#f2e8d5;      /* washed paper */
+    --sand:#e4d7bd;
+    --orange:#e08a45;     /* faded 7-11 orange */
+    --orange-d:#b96a2e;
+    --green:#5f9e73;      /* dusty green */
+    --green-d:#3f7050;
+    --red:#c4544a;        /* washed red */
+    --red-d:#94382f;
+    --ink:#4a3f35;        /* warm dark brown, not black */
+    --ink-soft:#8a7a68;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;min-height:100%;}
+  body{
+    font-family:Futura,'Century Gothic','Avant Garde','URW Gothic','Trebuchet MS','Franklin Gothic Medium',Verdana,sans-serif;
+    font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    background:var(--cream);
+    color:var(--ink);
+    display:flex;justify-content:center;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  /* soft washed stripes + paper grain */
+  body:before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+    background:repeating-linear-gradient(115deg,
+      rgba(224,138,69,.16) 0 34px,
+      rgba(242,232,213,0) 34px 68px,
+      rgba(95,158,115,.14) 68px 102px,
+      rgba(242,232,213,0) 102px 136px);
+  }
+  body:after{
+    content:"";position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.35;
+    background:radial-gradient(ellipse at 50% 30%,rgba(255,255,255,.6),rgba(138,122,104,.28) 95%);
+  }
+  #app{position:relative;z-index:5;width:100%;max-width:480px;padding:16px 16px 40px;}
+
+  h1{
+    font-size:clamp(30px,10vw,44px);line-height:1;text-align:center;margin:12px 0 4px;
+    letter-spacing:.14em;color:var(--cream);
+    text-shadow:
+      3px 0 0 var(--orange),-3px 0 0 var(--orange),0 3px 0 var(--orange),0 -3px 0 var(--orange),
+      3px 3px 0 var(--orange),-3px -3px 0 var(--orange),3px -3px 0 var(--orange),-3px 3px 0 var(--orange),
+      7px 7px 0 var(--green);
+  }
+  .sub{text-align:center;font-size:10px;letter-spacing:.42em;color:var(--ink-soft);margin:14px 0 20px;}
+
+  .panel{
+    border:4px solid var(--ink);background:rgba(255,251,242,.78);
+    box-shadow:7px 7px 0 var(--sand);
+    padding:16px;margin-bottom:20px;
+  }
+  .panel h2{
+    font-size:12px;margin:-16px -16px 16px;padding:9px 14px;letter-spacing:.24em;
+    background:var(--ink);color:var(--cream);
+  }
+  label{display:block;font-size:10px;letter-spacing:.2em;color:var(--ink-soft);margin:0 0 7px;}
+  .row{display:flex;gap:12px;margin-bottom:14px;}
+  .row>div{flex:1;min-width:0;}
+
+  input[type=text]{
+    width:100%;font-family:inherit;font-weight:700;font-size:26px;text-align:center;letter-spacing:.1em;
+    padding:11px 4px;color:var(--ink);background:var(--cream);
+    border:4px solid var(--ink);outline:none;border-radius:0;
+  }
+  input[type=text]:focus{background:#fff;border-color:var(--orange-d);}
+
+  .btn{
+    display:block;width:100%;font-family:inherit;font-weight:700;text-transform:uppercase;
+    font-size:16px;letter-spacing:.22em;padding:18px 8px;cursor:pointer;
+    border:4px solid var(--ink);color:var(--cream);background:var(--green);
+    box-shadow:0 7px 0 var(--green-d);
+    transition:transform .05s,box-shadow .05s;
+  }
+  .btn:active{transform:translateY(6px);box-shadow:0 1px 0 var(--green-d);}
+  .btn.orange{background:var(--orange);box-shadow:0 7px 0 var(--orange-d);}
+  .btn.red{background:var(--red);box-shadow:0 7px 0 var(--red-d);}
+  .btn.small{font-size:12px;padding:14px 6px;letter-spacing:.16em;}
+  .btn.ghost{background:transparent;color:var(--ink);box-shadow:0 7px 0 var(--sand);}
+
+  .mk{border:3px solid var(--sand);padding:12px;margin-bottom:12px;background:rgba(242,232,213,.5);}
+  .mk .top{display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:.18em;color:var(--ink-soft);margin-bottom:10px;}
+  .mk .top b{color:var(--orange-d);font-size:17px;}
+  .del{font-family:inherit;font-weight:700;font-size:10px;letter-spacing:.14em;background:var(--red);color:var(--cream);border:3px solid var(--ink);padding:5px 9px;cursor:pointer;}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:18px;background:var(--cream);border:3px solid var(--ink);outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:28px;background:var(--orange);border:3px solid var(--ink);cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:24px;height:28px;border-radius:0;background:var(--orange);border:3px solid var(--ink);cursor:pointer;}
+
+  #run{display:none;text-align:center;}
+  .phase{font-size:30px;letter-spacing:.3em;margin:4px 0 12px;}
+  .big{font-size:clamp(56px,20vw,82px);line-height:.95;margin:6px 0;letter-spacing:.04em;color:var(--ink);}
+  .lbl{font-size:10px;letter-spacing:.24em;color:var(--ink-soft);margin-bottom:14px;}
+  .bar{height:22px;border:4px solid var(--ink);background:var(--cream);position:relative;overflow:hidden;margin:8px 0 4px;}
+  .bar i{display:block;height:100%;width:0;background:var(--green);transition:width .2s linear;}
+  .ticks{position:absolute;inset:0;pointer-events:none;}
+  .ticks span{position:absolute;top:0;bottom:0;width:4px;background:var(--red);}
+  .total{font-size:38px;color:var(--orange-d);margin:2px 0;}
+  .rounds{font-size:11px;letter-spacing:.18em;color:var(--ink-soft);margin:16px 0 18px;}
+  .hint{font-size:9px;letter-spacing:.14em;color:var(--ink-soft);text-align:center;line-height:2.1;margin-top:14px;text-transform:none;}
+  .err{color:var(--red-d);font-size:11px;letter-spacing:.12em;text-align:center;min-height:16px;margin-bottom:10px;}
+  .badge{display:inline-block;font-size:9px;letter-spacing:.16em;border:3px solid var(--sand);padding:6px 10px;color:var(--ink-soft);margin-top:4px;text-transform:none;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <h1>Pixel Pacer</h1>
+  <p class="sub">&#9632; Interval Trainer &#9632;</p>
+
+  <!-- ============ SETUP ============ -->
+  <div id="setup">
+    <div class="panel">
+      <h2>Timing</h2>
+      <div class="row">
+        <div><label>Set (mm:ss)</label><input id="workT" type="text" inputmode="numeric" value="00:45" maxlength="5"></div>
+        <div><label>Rest (mm:ss)</label><input id="restT" type="text" inputmode="numeric" value="00:15" maxlength="5"></div>
+      </div>
+      <label>Total workout (mm:ss)</label>
+      <input id="totalT" type="text" inputmode="numeric" value="20:00" maxlength="5">
+    </div>
+
+    <div class="panel">
+      <h2>Progress Markers &#183; Max 5</h2>
+      <div id="mkList"></div>
+      <button class="btn orange small" id="addMk">+ Add Marker</button>
+    </div>
+
+    <div class="panel" style="text-align:center">
+      <h2>Sound Test</h2>
+      <div class="row" style="margin-bottom:0">
+        <div><button class="btn ghost small" id="tSet">End of set</button></div>
+        <div><button class="btn ghost small" id="tRest">End of rest</button></div>
+        <div><button class="btn ghost small" id="tMk">Marker</button></div>
+      </div>
+    </div>
+
+    <div class="err" id="err"></div>
+    <button class="btn" id="startBtn">&#9654; Start Workout</button>
+    <p class="hint">Plug in headphones. Screen can be turned off &mdash;<br>the full workout is scheduled on the audio clock.</p>
+  </div>
+
+  <!-- ============ RUN ============ -->
+  <div id="run">
+    <div class="panel">
+      <div class="phase" id="phase">Work</div>
+      <div class="big" id="phaseClock">00:45</div>
+      <div class="lbl" id="phaseLbl">Set time remaining</div>
+      <div class="bar"><i id="phaseBar"></i></div>
+    </div>
+
+    <div class="panel">
+      <div class="lbl" style="margin:0 0 10px">Total remaining</div>
+      <div class="total" id="totalClock">20:00</div>
+      <div class="bar" style="margin-top:14px"><i id="totalBar"></i><div class="ticks" id="ticks"></div></div>
+      <div class="rounds" id="rounds">Round 1 &#183; 0% done</div>
+      <div class="row">
+        <div><button class="btn orange small" id="pauseBtn">&#10074;&#10074; Pause</button></div>
+        <div><button class="btn red small" id="stopBtn">&#9632; Stop</button></div>
+      </div>
+      <div class="badge" id="bgBadge">Background audio: arming&hellip;</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i);};
+
+/* ================= AUDIO ================= */
+var AC=null, master=null, keepAudio=null, keepOsc=null;
+
+function makeSilentWav(sec){
+  var sr=8000, n=sr*sec, len=44+n*2, b=new ArrayBuffer(len), v=new DataView(b), o=0;
+  function s(str){for(var i=0;i<str.length;i++)v.setUint8(o++,str.charCodeAt(i));}
+  s("RIFF");v.setUint32(o,len-8,true);o+=4;s("WAVEfmt ");v.setUint32(o,16,true);o+=4;
+  v.setUint16(o,1,true);o+=2;v.setUint16(o,1,true);o+=2;v.setUint32(o,sr,true);o+=4;
+  v.setUint32(o,sr*2,true);o+=4;v.setUint16(o,2,true);o+=2;v.setUint16(o,16,true);o+=2;
+  s("data");v.setUint32(o,n*2,true);o+=4;
+  var bytes=new Uint8Array(b),bin="";
+  for(var i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);
+  return "data:audio/wav;base64,"+btoa(bin);
+}
+
+function initAudio(){
+  if(AC){ if(AC.state==="suspended")AC.resume(); return; }
+  AC=new (window.AudioContext||window.webkitAudioContext)();
+  master=AC.createGain(); master.gain.value=0.95; master.connect(AC.destination);
+  var b=AC.createBuffer(1,1,22050),s=AC.createBufferSource();s.buffer=b;s.connect(master);s.start(0);
+
+  // --- keep the media session alive so the OS doesn't suspend us with screen off
+  keepAudio=new Audio(makeSilentWav(2));
+  keepAudio.loop=true; keepAudio.volume=0.02; keepAudio.setAttribute("playsinline","");
+  // inaudible DC-ish tone keeps the WebAudio graph "producing sound"
+  keepOsc=AC.createOscillator();
+  var kg=AC.createGain(); kg.gain.value=0.0009;
+  keepOsc.type="sine"; keepOsc.frequency.value=30;
+  keepOsc.connect(kg); kg.connect(AC.destination); keepOsc.start();
+}
+
+function armBackground(){
+  if(!keepAudio) return;
+  keepAudio.play().then(function(){ setBadge(true); }).catch(function(){ setBadge(false); });
+  if("mediaSession" in navigator){
+    try{
+      navigator.mediaSession.metadata=new MediaMetadata({
+        title:"Pixel Pacer — workout running", artist:"Interval Trainer", album:"Pixel Pacer"
+      });
+      navigator.mediaSession.playbackState="playing";
+      navigator.mediaSession.setActionHandler("pause",function(){ togglePause(true); });
+      navigator.mediaSession.setActionHandler("play",function(){ togglePause(false); });
+      navigator.mediaSession.setActionHandler("stop",function(){ stopWorkout(); });
+    }catch(e){}
+  }
+}
+function disarmBackground(){
+  if(keepAudio){ keepAudio.pause(); }
+  if("mediaSession" in navigator){ try{navigator.mediaSession.playbackState="paused";}catch(e){} }
+}
+function setBadge(ok){
+  $("bgBadge").textContent = ok ? "Background audio: ON \u2713 screen can sleep"
+                                : "Background audio: blocked \u2014 keep tab open";
+}
+
+/* --- tone helper: t is ABSOLUTE AudioContext time --- */
+function tone(t,freq,dur,type,vol,glideTo){
+  if(!AC) return;
+  var o=AC.createOscillator(), g=AC.createGain();
+  o.type=type||"square";
+  o.frequency.setValueAtTime(freq,t);
+  if(glideTo) o.frequency.exponentialRampToValueAtTime(glideTo,t+dur*0.85);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(vol,t+0.012);
+  g.gain.setValueAtTime(vol,t+dur*0.55);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(master);
+  o.start(t); o.stop(t+dur+0.03);
+  live.push(o);
+}
+
+/* ---- SOUND DESIGN ----
+   END OF SET  : two mellow low ticks, then a SUPER LOW "duummm"
+   END OF REST : "tum ... tum ... tuuum" mid-range, last one extended        */
+function sSetTick(t){                       // T-3, T-2
+  tone(t,146.83,0.20,"triangle",0.42);      // D3 soft
+  tone(t,73.42,0.24,"sine",0.30);           // sub layer
+}
+function sSetFinal(t){                      // "duuum" — same voice as the ticks, just longer
+  tone(t,146.83,1.05,"triangle",0.72);      // D3, held
+  tone(t,73.42,1.15,"sine",0.52);           // sub layer, matched to the ticks
+  tone(t,220,0.55,"triangle",0.16);         // faint upper body for clarity
+}
+function sRestTick(t){                      // "tum"  T-3, T-2
+  tone(t,196,0.26,"triangle",0.48);         // G3
+  tone(t,98,0.26,"sine",0.26);
+}
+function sRestFinal(t){                     // "tuuum" — same family, extended
+  tone(t,261.63,0.95,"triangle",0.62);      // C4, warm not shrill
+  tone(t,130.81,1.05,"sine",0.40);
+  tone(t,196,0.75,"triangle",0.22);
+}
+function sMarker(t){
+  var n=[196,261.63,329.63,261.63];
+  for(var i=0;i<n.length;i++) tone(t+i*0.16,n[i],0.20,"triangle",0.45);
+  tone(t+0.64,392,0.70,"triangle",0.40);
+  tone(t+0.64,196,0.80,"sine",0.26);
+}
+function sFinish(t){
+  var n=[261.63,329.63,392,523.25];
+  for(var i=0;i<n.length;i++) tone(t+i*0.18,n[i],0.24,"triangle",0.5);
+  tone(t+0.80,523.25,1.4,"triangle",0.5);
+  tone(t+0.80,130.81,1.6,"sine",0.42);
+  tone(t+0.80,261.63,1.4,"sine",0.3);
+}
+function click(){ if(AC) tone(AC.currentTime,392,0.06,"triangle",0.25); }
+
+/* ================= STATE ================= */
+var live=[];                 // scheduled oscillators (so we can cancel)
+var markers=[33,50,75];
+var S={running:false,paused:false,work:45,rest:15,total:1200,
+       t0:0,pauseAt:0,raf:null,events:[]};
+var wake=null;
+
+function killScheduled(){
+  for(var i=0;i<live.length;i++){ try{live[i].stop();live[i].disconnect();}catch(e){} }
+  live=[];
+}
+
+/* Build the ENTIRE workout as a list of {at, kind} offsets in seconds. */
+function buildEvents(){
+  var ev=[], t=0, phase="work";
+  while(t < S.total-0.01){
+    var dur = phase==="work"?S.work:S.rest;
+    var end = Math.min(t+dur, S.total);
+    if(end >= S.total-0.01) break;            // final switch replaced by finish
+    if(end-2>=0.2) ev.push({at:end-2,k:phase+"Tick"});
+    if(end-1>=0.2) ev.push({at:end-1,k:phase+"Tick"});
+    ev.push({at:end,k:phase+"Final"});
+    t=end; phase = phase==="work"?"rest":"work";
+  }
+  markers.forEach(function(p){
+    var at=S.total*p/100;
+    if(at>0.5 && at<S.total-0.5) ev.push({at:at,k:"marker"});
+  });
+  ev.push({at:S.total,k:"finish"});
+  ev.sort(function(a,b){return a.at-b.at;});
+  return ev;
+}
+
+/* Schedule every remaining event on the audio clock (immune to throttling). */
+function scheduleFrom(elapsed){
+  killScheduled();
+  var base=AC.currentTime+0.05;
+  S.events.forEach(function(e){
+    if(e.at < elapsed-0.05) return;
+    var t=base+(e.at-elapsed);
+    if(e.k==="workTick") sSetTick(t);
+    else if(e.k==="workFinal") sSetFinal(t);
+    else if(e.k==="restTick") sRestTick(t);
+    else if(e.k==="restFinal") sRestFinal(t);
+    else if(e.k==="marker") sMarker(t);
+    else if(e.k==="finish") sFinish(t);
+  });
+}
+
+/* ================= HELPERS ================= */
+function parseT(v){
+  v=(v||"").trim();
+  var m=v.match(/^(\d{1,3}):([0-5]?\d)$/);
+  if(m) return +m[1]*60 + +m[2];
+  if(/^\d+$/.test(v)) return +v;
+  return NaN;
+}
+function fmt(s){s=Math.max(0,Math.ceil(s));var m=Math.floor(s/60),r=s%60;
+  return (m<10?"0":"")+m+":"+(r<10?"0":"")+r;}
+["workT","restT","totalT"].forEach(function(id){
+  $(id).addEventListener("blur",function(){var s=parseT(this.value);if(!isNaN(s))this.value=fmt(s);});
+});
+
+/* ================= MARKERS UI ================= */
+function renderMarkers(){
+  var box=$("mkList"); box.innerHTML="";
+  markers.forEach(function(p,i){
+    var d=document.createElement("div");d.className="mk";
+    d.innerHTML='<div class="top"><span>Marker '+(i+1)+'</span><b>'+p+'%</b>'+
+      '<button class="del" data-i="'+i+'">Del</button></div>'+
+      '<input type="range" min="5" max="95" step="1" value="'+p+'" data-i="'+i+'">';
+    box.appendChild(d);
+  });
+  box.querySelectorAll('input[type=range]').forEach(function(r){
+    r.addEventListener("input",function(){
+      markers[+this.dataset.i]=+this.value;
+      this.parentNode.querySelector("b").textContent=this.value+"%";
+    });
+  });
+  box.querySelectorAll('.del').forEach(function(b){
+    b.addEventListener("click",function(){markers.splice(+this.dataset.i,1);renderMarkers();});
+  });
+  $("addMk").style.display = markers.length>=5?"none":"block";
+}
+renderMarkers();
+$("addMk").addEventListener("click",function(){
+  if(markers.length>=5)return; initAudio(); click(); markers.push(50); renderMarkers();
+});
+
+/* ================= RUN LOOP (display only) ================= */
+function setPhase(p){
+  var w=(p==="work");
+  $("phase").textContent=w?"Work":"Rest";
+  $("phase").style.color=w?"var(--green-d)":"var(--orange-d)";
+  $("phaseLbl").textContent=w?"Set time remaining":"Rest time remaining";
+  $("phaseBar").style.background=w?"var(--green)":"var(--orange)";
+}
+var lastPhase="";
+function tick(){
+  if(!S.running){return;}
+  if(S.paused){S.raf=requestAnimationFrame(tick);return;}
+  var el=AC.currentTime-S.t0;
+  var left=S.total-el;
+  if(left<=0){ finish(); return; }
+
+  var cyc=S.work+S.rest, inC=el%cyc;
+  var phase = inC<S.work ? "work":"rest";
+  var pLeft = phase==="work" ? S.work-inC : cyc-inC;
+  var pDur  = phase==="work" ? S.work : S.rest;
+  if(phase!==lastPhase){ lastPhase=phase; setPhase(phase); }
+
+  var done=el/S.total;
+  $("phaseClock").textContent=fmt(pLeft);
+  $("totalClock").textContent=fmt(left);
+  $("phaseBar").style.width=(1-pLeft/pDur)*100+"%";
+  $("totalBar").style.width=Math.min(100,done*100)+"%";
+  $("rounds").textContent="Round "+(Math.floor(el/cyc)+1)+" \u00B7 "+Math.floor(done*100)+"% done";
+  S.raf=requestAnimationFrame(tick);
+}
+function finish(){
+  S.running=false; cancelAnimationFrame(S.raf); releaseWake(); disarmBackground();
+  $("phase").textContent="Done!"; $("phase").style.color="var(--red-d)";
+  $("phaseClock").textContent="00:00"; $("totalClock").textContent="00:00";
+  $("phaseBar").style.width="100%"; $("totalBar").style.width="100%";
+  $("rounds").textContent="\u25A0 Workout complete \u00B7 100% \u25A0";
+  $("pauseBtn").textContent="\u25B6 Again";
+}
+function drawTicks(){
+  var t=$("ticks");t.innerHTML="";
+  markers.forEach(function(p){var s=document.createElement("span");s.style.left="calc("+p+"% - 2px)";t.appendChild(s);});
+}
+
+/* ================= WAKE LOCK (optional) ================= */
+async function requestWake(){try{if("wakeLock" in navigator)wake=await navigator.wakeLock.request("screen");}catch(e){}}
+function releaseWake(){try{if(wake){wake.release();wake=null;}}catch(e){}}
+document.addEventListener("visibilitychange",function(){
+  if(document.visibilityState==="visible"&&S.running&&!S.paused){ requestWake(); if(AC&&AC.state==="suspended")AC.resume(); }
+});
+
+/* ================= CONTROLS ================= */
+$("startBtn").addEventListener("click",function(){
+  var w=parseT($("workT").value),r=parseT($("restT").value),t=parseT($("totalT").value),e=$("err");
+  e.textContent="";
+  if(isNaN(w)||w<4){e.textContent="! Set time invalid (min 00:04)";return;}
+  if(isNaN(r)||r<4){e.textContent="! Rest time invalid (min 00:04)";return;}
+  if(isNaN(t)||t<w+r){e.textContent="! Total must be \u2265 set + rest";return;}
+  initAudio(); armBackground();
+  markers.sort(function(a,b){return a-b;}); renderMarkers(); drawTicks();
+
+  S.work=w;S.rest=r;S.total=t;S.paused=false;S.running=true;
+  S.events=buildEvents();
+  S.t0=AC.currentTime+0.05;
+  scheduleFrom(0);
+  lastPhase=""; setPhase("work");
+  $("pauseBtn").textContent="\u2759\u2759 Pause";
+  $("setup").style.display="none"; $("run").style.display="block";
+  requestWake(); S.raf=requestAnimationFrame(tick);
+});
+
+function togglePause(forcePause){
+  if(!S.running){ $("run").style.display="none";$("setup").style.display="block";return; }
+  var want = (typeof forcePause==="boolean") ? forcePause : !S.paused;
+  if(want && !S.paused){
+    S.paused=true; S.pauseAt=AC.currentTime; killScheduled();
+    $("pauseBtn").textContent="\u25B6 Resume"; releaseWake();
+    if("mediaSession" in navigator) try{navigator.mediaSession.playbackState="paused";}catch(e){}
+  }else if(!want && S.paused){
+    var d=AC.currentTime-S.pauseAt; S.t0+=d; S.paused=false;
+    scheduleFrom(AC.currentTime-S.t0);
+    $("pauseBtn").textContent="\u2759\u2759 Pause"; requestWake();
+    if("mediaSession" in navigator) try{navigator.mediaSession.playbackState="playing";}catch(e){}
+  }
+}
+function stopWorkout(){
+  S.running=false;S.paused=false;cancelAnimationFrame(S.raf);killScheduled();
+  releaseWake();disarmBackground();
+  $("run").style.display="none";$("setup").style.display="block";
+}
+$("pauseBtn").addEventListener("click",function(){initAudio();click();togglePause();});
+$("stopBtn").addEventListener("click",function(){initAudio();click();stopWorkout();});
+
+/* sound test buttons */
+$("tSet").addEventListener("click",function(){initAudio();var t=AC.currentTime+0.05;
+  sSetTick(t);sSetTick(t+1);sSetFinal(t+2);});
+$("tRest").addEventListener("click",function(){initAudio();var t=AC.currentTime+0.05;
+  sRestTick(t);sRestTick(t+1);sRestFinal(t+2);});
+$("tMk").addEventListener("click",function(){initAudio();sMarker(AC.currentTime+0.05);});
+
+document.addEventListener("touchstart",function once(){initAudio();document.removeEventListener("touchstart",once);},{passive:true});
+})();
+</script>
+</body>
+</html>
